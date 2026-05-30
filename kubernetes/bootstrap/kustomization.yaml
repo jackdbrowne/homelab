@@ -1,0 +1,13 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: argocd
+
+resources:
+  - projects.yaml
+  # Wave 0: Essential components
+  - cilium-app.yaml
+  - coredns-app.yaml
+  # Wave 1: Storage components
+  - longhorn-app.yaml
+  # Wave 2: ArgoCD
+  - argocd-app.yaml

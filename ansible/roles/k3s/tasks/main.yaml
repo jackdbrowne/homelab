@@ -1,0 +1,79 @@
+---
+- name: Role Facts
+  ansible.builtin.include_role:
+    name: '{{ role }}'
+    tasks_from: facts
+  loop:
+    - k3s
+    - cilium
+  loop_control:
+    loop_var: role
+
+- name: Raspberry Pi Configuration
+  ansible.builtin.import_tasks:
+    file: raspberry_pi.yaml
+
+- name: Role Provisioning
+  notify: Start kubernetes service
+  block:
+    - name: Install k3s binary
+      ansible.builtin.get_url:
+        url: '{{ k3s_project.release.k3s.file }}'
+        checksum: sha256:{{ k3s_project.release.k3s.checksum }}
+        dest: '{{ k3s_node.binary }}'
+        owner: root
+        group: root
+        mode: '755'
+      register: k3s_result
+      delay: 1
+      retries: 3
+      until: k3s_result is not failed
+
+    - name: Create configuration directory
+      ansible.builtin.file:
+        path: '{{ k3s_map.node.directory.config }}'
+        state: directory
+        owner: root
+        group: root
+        mode: '755'
+
+    - name: Create configuration file
+      ansible.builtin.template:
+        src: config.j2
+        dest: '{{ k3s_project.cluster.config }}'
+        owner: root
+        group: root
+        mode: '600'
+
+    - name: Create kubelet configuration file
+      ansible.builtin.template:
+        src: config_kubelet.j2
+        dest: '{{ k3s_project.cluster.config_kubelet }}'
+        owner: root
+        group: root
+        mode: '644'
+
+    - name: Create service file
+      ansible.builtin.template:
+        src: service.j2
+        dest: /etc/systemd/system/{{ k3s_node.service.name }}.service
+        owner: root
+        group: root
+        mode: '644'
+
+    - name: Create service environment file
+      ansible.builtin.file:
+        path: /etc/systemd/system/{{ k3s_node.service.name }}.service.env
+        access_time: preserve
+        modification_time: preserve
+        state: touch
+        owner: root
+        group: root
+        mode: '600'
+
+- name: Flush handlers
+  ansible.builtin.meta: flush_handlers
+
+- name: Role Configuration
+  ansible.builtin.import_tasks:
+    file: configuration.yaml

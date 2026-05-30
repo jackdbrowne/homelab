@@ -1,0 +1,24 @@
+---
+- name: Upgrade distribution packages
+  ansible.builtin.apt:
+    state: fixed
+    upgrade: dist
+    autoremove: true
+    clean: true
+    purge: true
+    update_cache: true
+
+- name: Firmware Files Cleanup
+  block:
+    - name: Find firmware backup files
+      ansible.builtin.find:
+        path: /boot/firmware
+        patterns: '*.bak'
+        recurse: true
+      register: cluster_firmware_backup
+
+    - name: Purge firmware backup files
+      ansible.builtin.file:
+        path: '{{ item }}'
+        state: absent
+      loop: "{{ cluster_firmware_backup.files | map(attribute='path') | list }}"

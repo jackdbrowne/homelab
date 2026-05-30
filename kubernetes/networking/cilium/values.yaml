@@ -1,0 +1,113 @@
+bandwidthManager:
+  enabled: true
+  bbr: true
+
+bpf:
+  datapathMode: netkit
+  lbExternalClusterIP: false
+  masquerade: true
+  monitorAggregation: maximum
+  monitorInterval: 15s
+  preallocateMaps: false
+  tproxy: false
+  vlanBypass:
+    - 30
+bpfClockProbe: true
+
+cgroup:
+  resources:
+    limits:
+      memory: 128Mi
+    requests:
+      cpu: 10m
+      memory: 128Mi
+
+ciliumEndpointSlice:
+  enabled: true
+
+cni:
+  resources:
+    limits:
+      memory: 128Mi
+    requests:
+      cpu: 10m
+      memory: 128Mi
+
+envoy:
+  enabled: true
+  resources:
+    limits:
+      memory: 128Mi
+    requests:
+      cpu: 10m
+      memory: 128Mi
+  rollOutPods: true
+
+envoyConfig:
+  enabled: true
+
+gatewayAPI:
+  enabled: true
+  enableAlpn: true
+
+ipam:
+  operator:
+    clusterPoolIPv4PodCIDRList: 172.16.0.0/14
+
+k8sClientRateLimit:
+  burst: 100
+  qps: 50
+
+k8sServiceHost: 127.0.0.1
+k8sServicePort: 6444
+
+kubeProxyReplacement: true
+kubeProxyReplacementHealthzBindAddr: '0.0.0.0:10256'
+
+logOptions:
+  level: WARNING
+
+operator:
+  podDisruptionBudget:
+    enabled: true
+  resources:
+    limits:
+      memory: 128Mi
+    requests:
+      cpu: 10m
+      memory: 128Mi
+  rollOutPods: true
+
+priorityClassName: system-node-critical
+
+resources:
+  limits:
+    memory: 256Mi
+  requests:
+    cpu: 10m
+    memory: 256Mi
+
+rollOutCiliumPods: true
+
+autoDirectNodeRoutes: true
+directRoutingSkipUnreachable: true
+
+ingressController:
+  enabled: false
+
+l2announcements:
+  enabled: true
+  leaseDuration: 15s
+  leaseRenewDeadline: 5s
+  leaseRetryPeriod: 2s
+
+l2podAnnouncements:
+  enabled: true
+  interfacePattern: eth0
+
+loadBalancer:
+  l7:
+    backend: envoy
+
+routingMode: native
+ipv4NativeRoutingCIDR: 172.20.0.0/12

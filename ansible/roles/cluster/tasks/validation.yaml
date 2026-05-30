@@ -1,0 +1,11 @@
+---
+- name: Role Facts
+  ansible.builtin.import_role:
+    name: cluster
+    tasks_from: facts
+
+- name: Check internet connectivity
+  ansible.builtin.wait_for:
+    host: github.com
+    port: 443
+    timeout: 30

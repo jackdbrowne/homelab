@@ -1,0 +1,13 @@
+---
+server:
+  hosts:
+    kube1:
+      ansible_host: 192.168.10.20
+agent:
+  hosts:
+    kube2:
+      ansible_host: 192.168.10.21
+cluster:
+  children:
+    server:
+    agent:

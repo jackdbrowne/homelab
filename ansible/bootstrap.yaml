@@ -1,0 +1,56 @@
+---
+- name: Bootstrap Ansible user
+  hosts: cluster
+
+  become: true
+
+  vars:
+    install_fail2ban: true
+    disable_root_login: true
+    disable_password_login: true
+    remove_pi: true
+    ssh_public_key: "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPZQIK1PbK4HECF59CoGu2sAuEv2qKLGG0x1W6lfzyGA"
+    sshd_config: /etc/ssh/sshd_config
+
+  tasks:
+
+
+  # - name: Set authorized key
+  #   ansible.posix.authorized_key:
+  #     user: "{{ lookup('env', 'USER') }}"
+  #     key: "{{ ssh_public_key }}"
+
+  - name: Configure ansible user sudo
+    community.general.sudoers:
+      dest: /etc/sudoers
+      state: present
+      regexp: "'^{{ lookup('env', 'USER') }}'"
+      line: "{{ lookup('env', 'USER') }} ALL=(ALL) NOPASSWD: ALL"
+
+  - name: Disable remote root login
+    lineinfile:
+      dest: "{{ sshd_config }}"
+      regexp: "^#?PermitRootLogin"
+      line: "PermitRootLogin no"
+    when: disable_root_login
+    notify: restart ssh
+
+  - name: Disable password login
+    lineinfile:
+      dest: "{{ sshd_config }}"
+      regexp: "^#?PasswordAuthentication"
+      line: "PasswordAuthentication no"
+    when: disable_password_login
+    notify: restart ssh
+
+  - name: Remove pi user
+    user:
+      name: pi
+      state: absent
+    when: remove_pi
+
+  handlers:
+    - name: restart ssh
+      service:
+        name: ssh
+        state: restarted

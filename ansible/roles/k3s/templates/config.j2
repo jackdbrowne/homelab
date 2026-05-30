@@ -1,0 +1,27 @@
+data-dir: {{ k3s_map.node.directory.data }}
+{% if k3s_node.service.type | lower == 'server' %}
+bind-address: {{ k3s_node.ip }}
+cluster-domain: {{ k3s_vars.cluster.domain }}
+disable:
+  - coredns
+  - local-storage
+  - metrics-server
+  - servicelb
+  - traefik
+disable-cloud-controller: true
+disable-kube-proxy: true
+disable-network-policy: true
+embedded-registry: true
+flannel-backend: none
+kube-controller-manager-arg: bind-address={{ k3s_node.ip }}
+kube-scheduler-arg: bind-address={{ k3s_node.ip }}
+service-cidr: {{k3s_map.cluster.service_cidr}}
+{% endif %}
+kubelet-arg:
+  - config={{ k3s_project.cluster.config_kubelet }}
+{% if k3s_node.service.type | lower == 'agent' %}
+server: https://{{ k3s_map.server.default_host | extract(hostvars, morekeys=['ansible_facts', 'default_ipv4', 'address']) }}:{{ k3s_vars.server.api.port }}
+{% endif %}
+{% if k3s_project.cluster.token | length > 0 %}
+token: {{ k3s_project.cluster.token }}
+{% endif %}

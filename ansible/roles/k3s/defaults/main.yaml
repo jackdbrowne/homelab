@@ -1,0 +1,27 @@
+---
+k3s_vars:
+  cluster:
+    domain: cluster.local
+    kubeconfig:
+      local: true
+      # -- Local `/.kube` directory path
+      path: "{{ lookup('ansible.builtin.env', 'HOME') }}/.kube"
+    service:
+      host: 127.0.0.1
+      port: 6444
+  network:
+    interface: eth0
+  release:
+    k3s:
+      checksum: sha256sum-arm64.txt
+      file: k3s-arm64
+      name: k3s
+      repository:
+        name: k3s
+        org: k3s-io
+      version: v1.36.1+k3s1
+  server:
+    api:
+      port: 6443
+  service:
+    debug: false

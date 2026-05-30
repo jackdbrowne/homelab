@@ -1,0 +1,136 @@
+---
+- name: Hardware Configuration
+  notify: Reboot
+  block:
+    - name: Raspberry Pi Configuration
+      block:
+        - name: Set service facts
+          ansible.builtin.service_facts:
+
+        - name: Bluetooth Configuration
+          when: cluster_vars.disable_bluetooth is truthy
+          block:
+            - name: Disable bluetooth service
+              ansible.builtin.systemd_service:
+                name: bluetooth.service
+                state: stopped
+                enabled: false
+              when: ansible_facts.services['bluetooth.service'] is defined
+
+            - name: Disable hciuart service
+              ansible.builtin.systemd_service:
+                name: hciuart.service
+                state: stopped
+                enabled: false
+              when: ansible_facts.services['hciuart.service'] is defined
+
+        - name: WiFi Configuration
+          when: cluster_vars.disable_wifi is truthy
+          block:
+            - name: Disable wifi service
+              ansible.builtin.systemd_service:
+                name: wpa_supplicant.service
+                state: stopped
+                enabled: false
+              when: ansible_facts.services['wpa_supplicant.service'] is defined
+
+        - name: Create firmware purge configuration
+          ansible.builtin.copy:
+            content: |
+              DPkg::Post-Invoke {"/usr/bin/find /boot/firmware -type f -name '*.bak' -delete 2>/dev/null || true";};
+            dest: /etc/apt/apt.conf.d/90rpi-firmware-purge
+            owner: root
+            group: root
+            mode: '644'
+
+    - name: Mounted Filesystem
+      block:
+        - name: Start service
+          ansible.builtin.systemd_service:
+            name: fstrim.timer
+            state: started
+            daemon_reload: true
+            enabled: true
+
+        - name: Discard unused blocks on mounted filesystem
+          ansible.builtin.command:
+            cmd: fstrim -vA
+          changed_when: cluster_command.stdout.find('trimmed') != -1
+          register: cluster_command
+
+- name: OS Configuration
+  block:
+    - name: Get host fqdn
+      ansible.builtin.command:
+        cmd: hostname --fqdn
+      changed_when: false
+      register: cluster_host_fqdn
+
+    - name: Get host all fqdns
+      ansible.builtin.command:
+        cmd: hostname --all-fqdns
+      changed_when: false
+      register: cluster_host_all_fqdns
+
+    - name: Set cluster host fact
+      ansible.builtin.set_fact:
+        cluster_host:
+          extension: "{{ cluster_host_all_fqdns.stdout | split | first | split('.') | last | default('local') }}"
+          fqdn: '{{ cluster_host_all_fqdns.stdout | split | first }}'
+          ipv4: "{{ ansible_default_ipv4['address'] }}"
+          name: '{{ ansible_host }}'
+
+    - name: Set host fqdn
+      ansible.builtin.replace:
+        path: /etc/hosts
+        regexp: ^127.0.1.1\s.+\s{{ cluster_host['name'] }}$
+        replace: 127.0.1.1 {{ cluster_host['fqdn'] }} {{ cluster_host['name'] }}
+      notify: Reboot
+      when: cluster_host_fqdn.stdout != cluster_host['fqdn']
+
+    - name: Set root full name
+      ansible.builtin.command:
+        cmd: chfn -f "{{ cluster_host['name'] }}" root
+      changed_when: false
+
+    - name: Disable access time updates
+      ansible.builtin.replace:
+        path: /etc/fstab
+        regexp: defaults\t0
+        replace: defaults,noatime\t0
+      notify: Reboot
+
+    - name: Disable firewall service
+      ansible.builtin.systemd_service:
+        name: ufw.service
+        state: stopped
+        enabled: false
+
+    - name: Disable snapd services
+      ansible.builtin.systemd_service:
+        name: '{{ item }}'
+        state: stopped
+        enabled: false
+      loop:
+        - snapd.apparmor.service
+        - snapd.service
+        - snapd.seeded.service
+        - snapd.socket
+      when: cluster_vars.disable_snapd is truthy
+
+    - name: Install cifs utilities package
+      ansible.builtin.apt:
+        name: cifs-utils
+        autoremove: true
+        update_cache: true
+
+    - name: Load kernel modules
+      ansible.builtin.copy:
+        content: |
+          br_netfilter
+          overlay
+        dest: /etc/modules-load.d/kubernetes.conf
+        owner: root
+        group: root
+        mode: '644'
+      notify: Reboot

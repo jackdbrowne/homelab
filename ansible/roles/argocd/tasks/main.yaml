@@ -1,0 +1,41 @@
+---
+- name: Role Facts
+  ansible.builtin.include_role:
+    name: '{{ role }}'
+    tasks_from: facts
+  loop:
+    - k3s
+  loop_control:
+    loop_var: role
+
+- name: Role Provisioning
+  when: inventory_hostname in k3s_map.server.hosts
+  block:
+    - name: Validate service state
+      ansible.builtin.wait_for:
+        port: '{{ k3s_vars.server.api.port }}'
+        timeout: 30
+      any_errors_fatal: true
+
+    - name: Install
+      run_once: true
+      block:
+        - name: Install ArgoCD
+          kubernetes.core.k8s:
+            definition: "{{ lookup('kubernetes.core.kustomize', dir='{{ role_path }}/../../kubernetes/controllers/argocd', enable_helm=True) }}"
+            kubeconfig: '{{ k3s_project.cluster.kubeconfig }}'
+            wait: true
+          register: argocd_result
+          delay: 1
+          retries: 3
+          until: argocd_result is not failed
+
+        - name: Install bootstrap app
+          kubernetes.core.k8s:
+            kubeconfig: '{{ k3s_project.cluster.kubeconfig }}'
+            src: '{{ role_path }}/../../kubernetes/bootstrap/bootstrap.yaml'
+            wait: true
+          register: bootstrap_result
+          delay: 1
+          retries: 3
+          until: bootstrap_result is not failed

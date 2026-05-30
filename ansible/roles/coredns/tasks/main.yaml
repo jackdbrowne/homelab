@@ -1,0 +1,29 @@
+---
+- name: Role Facts
+  ansible.builtin.include_role:
+    name: '{{ role }}'
+    tasks_from: facts
+  loop:
+    - k3s
+  loop_control:
+    loop_var: role
+
+- name: Role Provisioning
+  when: inventory_hostname in k3s_map.server.hosts
+  block:
+    - name: Validate service state
+      ansible.builtin.wait_for:
+        port: '{{ k3s_vars.server.api.port }}'
+        timeout: 30
+      any_errors_fatal: true
+
+    - name: Install kustomize
+      kubernetes.core.k8s:
+        definition: "{{ lookup('kubernetes.core.kustomize', dir='{{ role_path }}/../../kubernetes/networking/coredns', enable_helm=True) }}"
+        kubeconfig: '{{ k3s_project.cluster.kubeconfig }}'
+        wait: true
+      register: coredns_result
+      delay: 1
+      retries: 3
+      until: coredns_result is not failed
+      run_once: true

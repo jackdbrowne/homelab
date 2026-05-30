@@ -1,0 +1,5 @@
+---
+cluster_vars:
+  disable_wifi: true
+  disable_bluetooth: true
+  disable_snapd: true

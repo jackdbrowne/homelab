@@ -1,0 +1,73 @@
+---
+- name: Role Facts
+  ansible.builtin.include_role:
+    name: '{{ role }}'
+    tasks_from: facts
+  loop:
+    - k3s
+    - cilium
+  loop_control:
+    loop_var: role
+
+- name: Role Provisioning
+  when: inventory_hostname in k3s_map.server.hosts
+  block:
+    - name: Validate service state
+      ansible.builtin.wait_for:
+        port: '{{ k3s_vars.server.api.port }}'
+        timeout: 30
+      any_errors_fatal: true
+
+    - name: Download archive
+      ansible.builtin.get_url:
+        url: '{{ item.url }}'
+        checksum: sha256:{{ item.url }}.sha256sum
+        dest: /tmp
+        owner: root
+        group: root
+        mode: '644'
+      loop: '{{ cilium_resources.release }}'
+      register: cilium_result
+      delay: 1
+      retries: 3
+      until: cilium_result is not failed
+      check_mode: false
+
+    - name: Install binary
+      ansible.builtin.unarchive:
+        src: /tmp/{{ item.file }}
+        dest: '{{ k3s_map.node.directory.bin }}'
+        owner: root
+        group: root
+        mode: '755'
+        remote_src: true
+      loop: '{{ cilium_resources.release }}'
+
+    - name: Remove archive
+      ansible.builtin.file:
+        path: /tmp/{{ item.file }}
+        state: absent
+      loop: '{{ cilium_resources.release }}'
+      check_mode: false
+
+    - name: Install
+      run_once: true
+      block:
+        - name: Install Gateway API
+          kubernetes.core.k8s:
+            kubeconfig: '{{ k3s_project.cluster.kubeconfig }}'
+            src: '{{ cilium_project.release.gateway_api.url }}/{{ cilium_project.release.gateway_api.file }}'
+          register: cilium_result
+          delay: 1
+          retries: 3
+          until: cilium_result is not failed
+
+        - name: Install Cilium
+          kubernetes.core.k8s:
+            definition: "{{ lookup('kubernetes.core.kustomize', dir='{{ role_path }}/../../kubernetes/networking/cilium', enable_helm=True) }}"
+            kubeconfig: '{{ k3s_project.cluster.kubeconfig }}'
+            wait: true
+          register: cilium_result
+          delay: 1
+          retries: 3
+          until: cilium_result is not failed

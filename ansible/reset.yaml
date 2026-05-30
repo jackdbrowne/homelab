@@ -1,0 +1,32 @@
+---
+- name: Cluster Reset
+  hosts: cluster
+  become: true
+  gather_facts: true
+  serial:
+    - 3
+    - 5
+  post_tasks:
+    - name: Remove archived journal files
+      ansible.builtin.command:
+        cmd: journalctl --rotate --vacuum-time=1s
+      changed_when: false
+  tasks:
+    - name: Get packages information
+      ansible.builtin.package_facts:
+      tags: always
+
+    - name: Reset cluster
+      ansible.builtin.include_role:
+        name: '{{ reset }}'
+        tasks_from: reset
+      loop:
+        # - cluster
+        - k3s
+      loop_control:
+        loop_var: reset
+  vars_prompt:
+    - name: prompt_remove_packages
+      prompt: Remove installed apt packages? [Y/n]
+      default: 'n'
+      private: false

@@ -1,0 +1,31 @@
+---
+- name: Cluster Provisioning
+  hosts: cluster
+  become: true
+  gather_facts: true
+  roles:
+    - cluster
+  tags: cluster
+
+- name: Kubernetes Provisioning
+  hosts: cluster
+  become: true
+  gather_facts: true
+  roles:
+    - helm
+    - k3s
+  serial:
+    - 1
+    - 2
+    - 5
+  tags: kubernetes
+
+- name: Charts Provisioning
+  hosts: server
+  become: true
+  gather_facts: true
+  roles:
+    - cilium
+    - coredns
+    - argocd
+  tags: charts
