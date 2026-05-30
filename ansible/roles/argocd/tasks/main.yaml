@@ -33,7 +33,7 @@
         - name: Install bootstrap app
           kubernetes.core.k8s:
             kubeconfig: '{{ k3s_project.cluster.kubeconfig }}'
-            src: '{{ role_path }}/../../kubernetes/bootstrap/bootstrap.yaml'
+            definition: "{{ lookup('file', '{{ role_path }}/../../../kubernetes/bootstrap/bootstrap.yaml') | from_yaml }}"
             wait: true
           register: bootstrap_result
           delay: 1
