@@ -42,6 +42,7 @@ controller:
       memory: 512Mi
 
 dex:
+  enabled: false
   metrics:
     enabled: true
   resources:
