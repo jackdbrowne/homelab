@@ -7,7 +7,9 @@ resources:
   # Wave 0: Essential components
   - cilium-app.yaml
   - coredns-app.yaml
-  # Wave 1: Storage components
+  # Wave 1: Sealed secrets
+  - sealed-secrets-app.yaml
+  # Wave 2: Storage components
   - longhorn-app.yaml
-  # Wave 2: ArgoCD
+  # Wave 3: ArgoCD
   - argocd-app.yaml

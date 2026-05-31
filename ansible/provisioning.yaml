@@ -27,5 +27,6 @@
   roles:
     - cilium
     - coredns
+    - sealed_secrets
     - argocd
   tags: charts

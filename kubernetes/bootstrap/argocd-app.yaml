@@ -7,7 +7,7 @@ metadata:
     app.kubernetes.io/component: argocd
     app.kubernetes.io/managed-by: argocd
   annotations:
-    argocd.argoproj.io/sync-wave: "2"
+    argocd.argoproj.io/sync-wave: "3"
   finalizers:
   - resources-finalizer.argocd.argoproj.io
 spec:
