@@ -11,7 +11,7 @@ metadata:
   finalizers:
   - resources-finalizer.argocd.argoproj.io
 spec:
-  project: infrastructure
+  project: controllers
   source:
     repoURL: https://github.com/jackdbrowne/homelab.git
     targetRevision: main

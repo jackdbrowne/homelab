@@ -13,7 +13,7 @@ metadata:
     argocd.argoproj.io/sync-wave: "1"
     argocd.argoproj.io/compare-options: ServerSideDiff=true
 spec:
-  project: infrastructure
+  project: storage
   source:
     repoURL: https://github.com/jackdbrowne/homelab.git
     targetRevision: main
