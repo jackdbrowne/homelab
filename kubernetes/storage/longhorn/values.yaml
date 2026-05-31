@@ -1,0 +1,22 @@
+defaultSettings:
+  allowCollectingLonghornUsageMetrics: false
+  autoCleanupRecurringJobBackupSnapshot: true
+  autoCleanupSnapshotWhenDeleteBackup: true
+  autoCleanupSystemGeneratedSnapshot: true
+  concurrentAutomaticEngineUpgradePerNodeLimit: '1'
+  defaultDataLocality: 'best-effort'
+  defaultDataPath: "/var/lib/longhorn"
+  defaultReplicaCount: '{"v1":"2", "v2":"2"}'
+  disableSchedulingOnCordonedNode: true
+  nodeDownPodDeletionPolicy: 'delete-both-statefulset-and-deployment-pod'
+  nodeDrainPolicy: 'block-for-eviction'
+  removeSnapshotsDuringFilesystemTrim: true
+  replicaAutoBalance: 'least-effort'
+
+persistence:
+  defaultClassReplicaCount: 2
+  defaultDataLocality: 'best-effort'
+  migratable: true
+
+preUpgradeChecker:
+  jobEnabled: false
