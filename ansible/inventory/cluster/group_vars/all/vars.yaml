@@ -1,0 +1,4 @@
+---
+sealed_secrets:
+  key: "{{ vault_sealed_secrets_key }}"
+  cert: "{{ vault_sealed_secrets_cert }}"

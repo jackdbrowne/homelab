@@ -4,6 +4,7 @@ namespace: argocd
 
 resources:
   - namespace.yaml
+  - redis-secret.yaml
 
 helmCharts:
   - name: argo-cd

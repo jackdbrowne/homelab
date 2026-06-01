@@ -31,11 +31,19 @@
           retries: 3
           until: sealed_secrets_result is not failed
           run_once: true
-          no_log: true
 
         - name: Install secret key
           kubernetes.core.k8s:
-            definition: "{{ lookup('ansible.builtin.template', 'sealed_secrets_key.j2') | from_yaml }}"
+            definition:
+              apiVersion: v1
+              kind: Secret
+              type: kubernetes.io/tls
+              metadata:
+                name: sealed-secrets-key
+                namespace: sealed-secrets
+              data:
+                tls.key: '{{ sealed_secrets.key | b64encode  }}'
+                tls.crt: '{{ sealed_secrets.cert | b64encode  }}'
             kubeconfig: '{{ k3s_project.cluster.kubeconfig }}'
             wait: true
           register: sealed_secrets_result
