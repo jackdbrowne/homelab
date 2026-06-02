@@ -1,0 +1,88 @@
+ingressClass:
+  # -- We're not using Ingress
+  enabled: false
+gateway:
+  # -- We will deploy the gateways outside of Helm
+  enabled: false
+
+gatewayClass:
+  # -- Create a default GatewayClass
+  enabled: true
+
+api:
+  # -- Enable the dashboard
+  dashboard: true
+  # -- Custom name for the dashboard (v3.7+).
+  dashboardName: ""
+  # -- Disable the advertisement from the dashboard.
+  disableDashboardAd:
+  # -- Enable the insecure API (HTTP)
+  insecure:
+  # -- Enable the debug API
+  debug:
+  # -- Configure API basePath
+  basePath: ""
+
+providers:
+  kubernetesCRD:
+    # -- Don't use Traefik's proprietary IngressRoute
+    enabled: false
+  kubernetesIngress:
+    # -- Don't use Kubernetes Ingress provider
+    enabled: false
+  kubernetesGateway:
+    # -- Enable Traefik Gateway provider for Gateway API
+    enabled: true
+
+logs:
+  access:
+    # -- Enable access logs
+    enabled: true
+
+metrics:
+  ## Enable Prometheus metric collection
+  prometheus:
+    # -- Entry point used to expose metrics.
+    entryPoint: metrics
+    # -- Enable metrics on entry points.
+    addEntryPointsLabels: true
+    # -- Enable metrics on routers.
+    addRoutersLabels: true
+    # -- Enable metrics on services.
+    addServicesLabels: true
+
+ports:
+  web:
+    asDefault: false
+    port: 8000
+    expose:
+      default: true
+    exposedPort: 80
+    http:
+      redirections:
+        # -- Port Redirections
+        # Added in 2.2, one can make permanent redirects via entrypoints.
+        # Same sets of parameters: to, scheme, permanent and priority.
+        # https://doc.traefik.io/traefik/reference/install-configuration/entrypoints/#configuration-example
+        entryPoint:
+          to: websecure
+          scheme: https
+          permanent: true
+
+  websecure:
+    asDefault: true
+    port: 8443
+    expose:
+      default: true
+    exposedPort: 443
+    http:
+      tls:
+        enabled: true
+
+resources:
+  requests:
+    cpu: 50m
+    memory: 64Mi
+  limits:
+    cpu: 250m
+    memory: 128Mi

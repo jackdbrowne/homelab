@@ -13,3 +13,5 @@ resources:
   - longhorn-app.yaml
   # Wave 3: ArgoCD
   - argocd-app.yaml
+  - cert-manager-app.yaml
+  - traefik-app.yaml

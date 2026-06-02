@@ -5,6 +5,7 @@ namespace: argocd
 resources:
   - namespace.yaml
   - redis-secret.yaml
+  - http-route.yaml
 
 helmCharts:
   - name: argo-cd

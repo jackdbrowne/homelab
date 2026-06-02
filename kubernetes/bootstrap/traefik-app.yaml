@@ -1,0 +1,37 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: traefik
+  labels:
+    app.kubernetes.io/part-of: infrastructure
+    app.kubernetes.io/component: traefik
+    app.kubernetes.io/managed-by: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "3"
+  finalizers:
+  - resources-finalizer.argocd.argoproj.io
+spec:
+  project: networking
+  source:
+    repoURL: https://github.com/jackdbrowne/homelab.git
+    targetRevision: main
+    path: kubernetes/networking/traefik
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: traefik
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+    - CreateNamespace=true
+    - ServerSideApply=true
+    retry:
+      limit: 5
+      backoff:
+        duration: 1m
+        factor: 2
+        maxDuration: 5m
+  info:
+    - name: Description
+      value: 'Traefik Gateway for cluster ingress and routing'
