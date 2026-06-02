@@ -5,7 +5,7 @@ metadata:
   labels:
     app: traefik-gateway-internal
   annotations:
-    cert-manager.io/cluster-issuer: letsencrypt-staging
+    cert-manager.io/cluster-issuer: letsencrypt
 spec:
   gatewayClassName: traefik
   listeners:
