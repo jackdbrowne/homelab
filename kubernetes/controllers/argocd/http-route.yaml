@@ -5,7 +5,9 @@ metadata:
   namespace: argocd
 spec:
   parentRefs:
-    - name: traefik-gateway-internal
+    - group: gateway.networking.k8s.io	
+      kind: Gateway
+      name: traefik-gateway-internal
       namespace: traefik
   hostnames:
     - "argocd.brwn.network"
