@@ -16,7 +16,9 @@ spec:
       tls:
         mode: Terminate
         certificateRefs:
-          - name: wildcard-brwn-network-cert
+          - group: ''	
+            kind: Secret	
+            name: wildcard-brwn-network-cert
       allowedRoutes:
         namespaces:
           from: All
