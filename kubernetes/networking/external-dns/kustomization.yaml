@@ -1,0 +1,15 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: external-dns
+labels:
+  - pairs:
+      app.kubernetes.io/name: external-dns
+      app.kubernetes.io/component: dns
+      app.kubernetes.io/part-of: infrastructure
+      app.kubernetes.io/managed-by: argocd
+
+resources:
+  - namespace.yaml
+  - rbac.yaml
+  - pihole-password-secret.yaml
+  - deployment.yaml

@@ -11,7 +11,9 @@ resources:
   - sealed-secrets-app.yaml
   # Wave 2: Storage components
   - longhorn-app.yaml
-  # Wave 3: ArgoCD
+  # Wave 3: ArgoCD and Gateways
   - argocd-app.yaml
   - cert-manager-app.yaml
   - traefik-app.yaml
+  # Wave 4: Infrastructure
+  - external-dns-app.yaml
