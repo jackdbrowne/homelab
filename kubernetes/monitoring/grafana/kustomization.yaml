@@ -5,6 +5,7 @@ namespace: prometheus
 resources:
   - namespace.yaml
   - http-route.yaml
+  - grafana-credentials-secret.yaml
 
 helmCharts:
   - name: grafana
