@@ -1,0 +1,123 @@
+# Default values for kube-prometheus-stack.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+## Provide a name in place of kube-prometheus-stack for `app:` labels
+##
+nameOverride: "prometheus"
+
+## Override the deployment namespace
+##
+namespaceOverride: "prometheus"
+
+## Install Prometheus Operator CRDs
+##
+crds:
+  enabled: true
+
+
+## Create default rules for monitoring the cluster
+defaultRules:
+  rules:
+    # To scrape all of these components
+    # See https://github.com/prometheus-community/helm-charts/issues/204#issuecomment-765155883
+    # Also enable them below
+    etcd: false
+    kubeControllerManager: false
+    kubeScheduler: false
+    kubeProxy: false  # Cilium is used instead of kube-proxy
+    windows: false    # No Windows nodes in the cluster
+
+## Component scraping
+kubeControllerManager:
+  enabled: false
+kubeEtcd:
+  enabled: false
+kubeScheduler:
+  enabled: false
+kubeProxy:
+  enabled: false
+
+alertmanager:
+  ## Deploy alertmanager separately
+  enabled: false
+
+grafana:
+  ## Deploy Grafana separately
+  enabled: false
+
+## Manages Prometheus and Alertmanager components
+##
+prometheusOperator:
+  enabled: true
+
+  # Enable webhooks for ArgoCD compatibility
+  # Values comented in the default values.yaml from the chart
+  # Also see issue: https://github.com/prometheus-community/helm-charts/issues/4500#issuecomment-2693911587
+  admissionWebhooks:
+    enabled: true
+
+    annotations:
+      argocd.argoproj.io/hook: PreSync
+      argocd.argoproj.io/hook-delete-policy: HookSucceeded
+
+    mutatingWebhookConfiguration:
+      annotations:
+        argocd.argoproj.io/hook: PreSync
+
+    validatingWebhookConfiguration:
+      annotations:
+        argocd.argoproj.io/hook: PreSync
+
+    patch:
+      annotations:
+        argocd.argoproj.io/hook: PreSync
+        argocd.argoproj.io/hook-delete-policy: HookSucceeded
+
+  ## Resources
+  resources:
+    requests:
+      cpu: 100m
+      memory: 100Mi
+    limits:
+      cpu: 200m
+      memory: 128Mi
+
+## Deploy a Prometheus instance
+##
+prometheus:
+  enabled: true
+
+  ## Settings affecting prometheusSpec
+  ## ref: https://github.com/prometheus-operator/prometheus-operator/blob/main/Documentation/api-reference/api.md#prometheusspec
+  ##
+  prometheusSpec:
+    # Reduce scrape interval and retention
+    scrapeInterval: "60s"
+    evaluationInterval: "60s"
+    retention: 7d
+    # Enable OTLP Receiver
+    enableOTLPReceiver: true
+    # Resources
+    resources:
+      requests:
+        cpu: 100m
+        memory: 512Mi
+      limits:
+        cpu: 500m
+        memory: 1Gi
+    # Persistent storage
+    storageSpec:
+      volumeClaimTemplate:
+        spec:
+          storageClassName: longhorn
+          accessModes:
+            - ReadWriteOnce
+          resources:
+            requests:
+              storage: 30Gi
+    externalUrl: "prometheus.brwn.network"
+
+## Setting to true produces cleaner resource names, but requires a data migration because the name of the persistent volume changes. Therefore this should only be set once on initial installation.
+##
+cleanPrometheusOperatorObjectNames: true

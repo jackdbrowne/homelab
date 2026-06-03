@@ -1,0 +1,38 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: prometheus
+  labels:
+    app.kubernetes.io/part-of: monitoring
+    app.kubernetes.io/component: monitoring
+    app.kubernetes.io/managed-by: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "5"
+spec:
+  project: monitoring
+  source:
+    repoURL: https://github.com/jackdbrowne/homelab.git
+    targetRevision: main
+    path: kubernetes/monitoring/prometheus
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: prometheus
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+      allowEmpty: false
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true
+      - ApplyOutOfSyncOnly=true
+      - respectIgnoreDifferences=true
+    retry:
+      limit: 5
+      backoff:
+        duration: 1m
+        factor: 2
+        maxDuration: 5m
+  info:
+    - name: Description
+      value: 'Prometheus for metrics'

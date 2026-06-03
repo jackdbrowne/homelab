@@ -17,3 +17,6 @@ resources:
   - traefik-app.yaml
   # Wave 4: Infrastructure
   - external-dns-app.yaml
+  # Wave 5: Monitoring
+  - prometheus-app.yaml
+  - grafana-app.yaml

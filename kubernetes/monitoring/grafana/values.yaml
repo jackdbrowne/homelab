@@ -1,0 +1,47 @@
+resources:
+  requests:
+    cpu: 50m
+    memory: 128Mi
+  limits:
+    cpu: 100m
+    memory: 128Mi
+
+persistence:
+  type: pvc
+  enabled: true
+  # storageClassName: default
+  ## (Optional) Use this to bind the claim to an existing PersistentVolume (PV) by name.
+  # volumeName: ""
+  accessModes:
+    - ReadWriteOnce
+  size: 2Gi
+
+# Use an existing secret for the admin user.
+admin:
+  existingSecret: grafana-credentials
+  userKey: admin-user
+  passwordKey: admin-password
+
+datasources:
+  datasources.yaml:
+    apiVersion: 1
+    datasources:
+      - name: Prometheus
+        type: prometheus
+        access: proxy
+        url: http://cluster.local
+        isDefault: true
+
+grafana.ini:
+  analytics:
+    reporting_enabled: false
+    check_for_updates: false
+  server:
+    domain: "grafana.brwn.network"
+
+sidecar:
+  dashboards:
+    enabled: true
+    label: grafana_dashboard
+    labelValue: "1"
+    searchNamespace: ALL
