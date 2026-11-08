@@ -1,0 +1,37 @@
+---
+apiVersion: longhorn.io/v1beta2
+kind: Node
+metadata:
+  name: pve-k3s-01
+  namespace: longhorn
+spec:
+  disks:
+    # Disable scheduling on the default root partition
+    default-disk-80c4: # Longhorn's auto-generated default key name
+      path: /var/lib/longhorn
+      allowScheduling: false
+      tags: []
+    nvme-data-pool:
+      path: /mnt/longhorn
+      allowScheduling: true
+      storageReserved: 10737418240 # Reserve 10GB for filesystem safety overhead
+      tags:
+        - nvme
+---
+apiVersion: longhorn.io/v1beta2
+kind: Node
+metadata:
+  name: pve-k3s-02
+  namespace: longhorn
+spec:
+  disks:
+    default-disk-80c4:
+      path: /var/lib/longhorn
+      allowScheduling: false
+      tags: []
+    nvme-data-pool:
+      path: /mnt/longhorn
+      allowScheduling: true
+      storageReserved: 10737418240
+      tags:
+        - nvme

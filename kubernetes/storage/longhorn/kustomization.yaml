@@ -4,6 +4,7 @@ namespace: longhorn
 
 resources:
   - http-route.yaml
+  - nodes.yaml
 
 helmCharts:
   - name: longhorn

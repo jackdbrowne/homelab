@@ -4,6 +4,7 @@ defaultSettings:
   autoCleanupSnapshotWhenDeleteBackup: true
   autoCleanupSystemGeneratedSnapshot: true
   concurrentAutomaticEngineUpgradePerNodeLimit: '1'
+  createDefaultDiskLabeledNodes: false # Don't auto-provision /var/lib/longhorn
   defaultDataLocality: 'best-effort'
   defaultDataPath: "/var/lib/longhorn"
   defaultReplicaCount: '{"v1":"2", "v2":"2"}'
