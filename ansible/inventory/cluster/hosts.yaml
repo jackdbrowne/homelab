@@ -1,12 +1,28 @@
 ---
 server:
   hosts:
+    pve-k3s-01:
+      ansible_host: 192.168.10.101
+      disk_mounts:
+        - dir: /mnt/longhorn
+          disk: /dev/sdb
+          fstype: ext4
+      k3s_server_vip_interface: "ens18.30"
+    pve-k3s-02:
+      ansible_host: 192.168.10.102
+      disk_mounts:
+        - dir: /mnt/longhorn
+          disk: /dev/sdb
+          fstype: ext4
+      k3s_server_vip_interface: "ens18.30"
     kube1:
       ansible_host: 192.168.10.20
+      sysctl_params: {}
+      k3s_node_taint: 
+        - "hardware=rpi:NoSchedule"
+        - "arch=arm:NoSchedule"
 agent:
-  hosts:
-    kube2:
-      ansible_host: 192.168.10.21
+  hosts: {}
 cluster:
   children:
     server:

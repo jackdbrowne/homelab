@@ -1,23 +1,12 @@
 ---
-helm_vars:
-  environment:
-    HELM_NAMESPACE: default
-  plugins:
-    - name: diff
-      enabled: true
-      packages:
-        - python3-jsonpatch
-      repository:
-        url: https://github.com/databus23/helm-diff
-      version: v3.15.6
-  release:
-    helm:
-      distro:
-        channel: any
-        name: debian
-      key: helm-archive-keyring.gpg
-      repository:
-        channel: stable
-        key: gpgkey
-        url: https://packages.buildkite.com/helm-linux/helm-debian
-      version: v3.20.0-1
+helm_version: v3.22.1
+helm_install_dir: /usr/local/bin
+helm_environment: {}
+helm_default_environment:
+  HELM_CACHE_HOME: '/usr/local/share/helm/cache'
+  HELM_CONFIG_HOME: '/usr/local/share/helm/config'
+  HELM_DATA_HOME: '/usr/local/share/helm'
+  HELM_PLUGINS: '/usr/local/share/helm/plugins'
+  HELM_REGISTRY_CONFIG: '/usr/local/share/helm/config/registry/config.json'
+  HELM_REPOSITORY_CACHE: '/usr/local/share/helm/cache/repository'
+  HELM_REPOSITORY_CONFIG: '/usr/local/share/helm/config/repositories.yaml'

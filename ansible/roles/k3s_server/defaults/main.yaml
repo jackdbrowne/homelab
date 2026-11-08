@@ -1,0 +1,18 @@
+---
+k3s_server_api_endpoint: 192.168.30.200
+k3s_server_api_port: 6443
+k3s_server_config_yaml: |
+  disable:
+    - coredns
+    - local-storage
+    - metrics-server
+    - servicelb
+    - traefik
+    - gateway-api-crd
+  disable-cloud-controller: true
+  disable-kube-proxy: true
+  disable-network-policy: true
+  embedded-registry: true
+  flannel-backend: none
+  service-cidr: '172.20.0.0/16'
+k3s_server_user_kubectl: true

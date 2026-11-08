@@ -1,0 +1,45 @@
+---
+- name: Create tempdir for cilium-cli install
+  ansible.builtin.tempfile:
+    state: directory
+    prefix: 'cilium.'
+  register: cilium_tempdir
+
+- name: Download cilium-cli archive x64
+  when: ansible_facts.architecture == "x86_64"
+  ansible.builtin.get_url:
+    url: "https://github.com/cilium/cilium-cli/releases/download/{{ cilium_cli_version }}/cilium-linux-amd64.tar.gz"
+    checksum: "sha256:https://github.com/cilium/cilium-cli/releases/download/{{ cilium_cli_version }}/cilium-linux-amd64.tar.gz.sha256sum"
+    dest: "{{ cilium_tempdir.path }}/cilium-archive.tar.gz"
+    owner: root
+    group: root
+    mode: "0755"
+  register: cilium_download_x64
+  retries: 5
+  delay: 10
+  until: cilium_download_x64 is succeeded
+
+- name: Download cilium-cli archive arm64
+  when:
+    - ( ansible_facts.architecture is search("arm") and ansible_facts.userspace_bits == "64" )
+      or ansible_facts.architecture is search("aarch64")
+  ansible.builtin.get_url:
+    url: "https://github.com/cilium/cilium-cli/releases/download/{{ cilium_cli_version }}/cilium-linux-arm64.tar.gz"
+    checksum: "sha256:https://github.com/cilium/cilium-cli/releases/download/{{ cilium_cli_version }}/cilium-linux-arm64.tar.gz.sha256sum"
+    dest: "{{ cilium_tempdir.path }}/cilium-archive.tar.gz"
+    owner: root
+    group: root
+    mode: "0755"
+  register: cilium_download_arm64
+  retries: 5
+  delay: 10
+  until: cilium_download_arm64 is succeeded
+
+- name: Install cilium-cli
+  ansible.builtin.unarchive:
+    src: "{{ cilium_tempdir.path }}/cilium-archive.tar.gz"
+    dest: /usr/local/bin
+    owner: root
+    group: root
+    mode: '755'
+    remote_src: true

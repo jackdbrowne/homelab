@@ -1,0 +1,89 @@
+---
+- name: Check if Helm binary exists.
+  ansible.builtin.stat:
+    path: "{{ helm_install_dir }}/helm"
+  register: helm_status
+
+- name: Check Helm version.
+  ansible.builtin.command: "{{ helm_install_dir }}/helm version"
+  failed_when: false
+  changed_when: false
+  register: current_helm_version
+
+- name: Install helm
+  when: >
+    not helm_status.stat.exists 
+    or helm_version not in current_helm_version.stdout
+  block:
+    - name: Create tempdir for helm install
+      ansible.builtin.tempfile:
+        state: directory
+        prefix: 'helm.'
+      register: helm_tempdir
+
+    - name: Install helm x64
+      when: ansible_facts.architecture == "x86_64"
+      block:
+        - name: Download helm x64 archive
+          ansible.builtin.get_url:
+            url: https://get.helm.sh/helm-{{ helm_version }}-linux-amd64.tar.gz
+            checksum: sha256:https://get.helm.sh/helm-{{ helm_version }}-linux-amd64.tar.gz.sha256sum
+            dest: "{{ helm_tempdir.path }}"
+            owner: root
+            group: root
+            mode: "0755"
+          register: helm_download_x64
+          retries: 5
+          delay: 10
+          until: helm_download_x64 is succeeded
+        
+        - name: Extract helm x64 binary
+          ansible.builtin.unarchive:
+            src: "{{ helm_tempdir.path }}/helm-{{ helm_version }}-linux-amd64.tar.gz"
+            dest: "{{ helm_tempdir.path }}"
+            remote_src: True
+            mode: "0755"
+          when: helm_download_x64 is changed
+        
+        - name: Install helm x64 binary
+          ansible.builtin.copy:
+            src: "{{ helm_tempdir.path }}/linux-amd64/helm"
+            dest: "{{ helm_install_dir }}/helm"
+            remote_src: True
+          when: helm_download_x64 is changed
+
+    - name: Install helm arm64
+      when: >
+        ( ansible_facts.architecture is search("arm") and ansible_facts.userspace_bits == "64" )
+        or ansible_facts.architecture is search("aarch64")
+      block:
+        - name: Download helm arm64 archive
+          ansible.builtin.get_url:
+            url: https://get.helm.sh/helm-{{ helm_version }}-linux-arm64.tar.gz
+            checksum: sha256:https://get.helm.sh/helm-{{ helm_version }}-linux-arm64.tar.gz.sha256sum
+            dest: "{{ helm_tempdir.path }}"
+            owner: root
+            group: root
+            mode: "0755"
+          register: helm_download_arm64
+          retries: 5
+          delay: 10
+          until: helm_download_arm64 is succeeded
+        
+        - name: Extract helm arm64 binary
+          ansible.builtin.unarchive:
+            src: "{{ helm_tempdir.path }}/helm-{{ helm_version }}-linux-arm64.tar.gz"
+            dest: "{{ helm_tempdir.path }}"
+            remote_src: True
+            mode: "0755"
+          when: helm_download_arm64 is changed
+        
+        - name: Install helm arm64 binary
+          ansible.builtin.copy:
+            src: "{{ helm_tempdir.path }}/linux-arm64/helm"
+            dest: "{{ helm_install_dir }}/helm"
+            remote_src: True
+            mode: "0755"
+          when: helm_download_arm64 is changed
+        
+

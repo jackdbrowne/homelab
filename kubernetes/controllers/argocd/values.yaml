@@ -1,6 +1,7 @@
 configs:
   params:
     server.insecure: true
+    reposerver.parallelism.limit: "1"
   cm:
     url: https://argocd.brwn.network
     kustomize.buildOptions: "--enable-helm"
@@ -85,10 +86,20 @@ repoServer:
     enabled: true
   resources:
     limits:
-      memory: 128Mi
+      memory: 256Mi
     requests:
-      cpu: 10m
+      cpu: 50m
       memory: 128Mi
+  livenessProbe:
+    initialDelaySeconds: 45
+    periodSeconds: 20
+    timeoutSeconds: 15
+    failureThreshold: 8
+  readinessProbe:
+    initialDelaySeconds: 20
+    periodSeconds: 15
+    timeoutSeconds: 10
+    failureThreshold: 4
   env:
     # Increase the repo server execution timeout to 5 minutes to prevent timeouts during large kustomize builds or Helm chart rendering
     - name: ARGOCD_EXEC_TIMEOUT

@@ -1,0 +1,60 @@
+---
+- name: Make rancher directory
+  ansible.builtin.file:
+    path: "/var/lib/rancher"
+    mode: "0755"
+    state: directory
+
+- name: Make manifests directory
+  ansible.builtin.file:
+    path: "/var/lib/rancher/k3s/server/manifests"
+    mode: "0700"
+    state: directory
+
+- name: Make pod-manifests directory
+  ansible.builtin.file:
+    path: "/var/lib/rancher/k3s/agent/pod-manifests"
+    mode: "0700"
+    state: directory
+
+- name: Make k3s config directory
+  ansible.builtin.file:
+    path: "/etc/rancher/k3s"
+    mode: "0755"
+    state: directory
+
+- name: Create registries file
+  ansible.builtin.template:
+    src: registries.j2
+    dest: "/etc/rancher/k3s/registries.yaml"
+    owner: root
+    group: root
+    mode: "0644"
+
+- name: Make kubelet config directory
+  ansible.builtin.file:
+    path: "/var/lib/rancher/k3s/agent/etc/kubelet.conf.d"
+    mode: "0755"
+    state: directory
+
+- name: Create kubelet config
+  ansible.builtin.template:
+    src: config_kubelet.j2
+    dest: '/var/lib/rancher/k3s/agent/etc/kubelet.conf.d/10-k3s-overrides.conf'
+    owner: root
+    group: root
+    mode: '644'
+
+
+- name: Sysctl configuration
+  ansible.posix.sysctl:
+    name: "{{ item.key }}"
+    value: "{{ item.value }}"
+    state: present
+    sysctl_file: /etc/sysctl.d/99-kubernetes.conf
+    reload: yes
+  loop: "{{ lookup('ansible.builtin.dict', default_sysctl_params | combine(sysctl_params)) }}"
+
+- name: Download k3s binary
+  ansible.builtin.import_tasks:
+    file: download.yaml

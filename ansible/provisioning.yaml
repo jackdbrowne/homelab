@@ -1,5 +1,30 @@
 ---
-- name: Cluster Provisioning
+- name: Pre checks
+  hosts: all
+  pre_tasks:
+    - name: Verify Ansible is version 2.15 or above. (If this fails you may need to update Ansible)
+      ansible.builtin.assert:
+        that: ansible_version.full is version_compare('2.15', '>=')
+        msg: >
+          "Ansible is out of date. See here for more info: https://docs.technotim.com/posts/ansible-automation/"
+
+    - name: Verify all cluster nodes have unique hostnames
+      ansible.builtin.assert:
+        that: (cluster_hostnames | unique | length) == (cluster_hostnames | length)
+        msg: >-
+          k3s nodes must have unique hostnames. Found a duplicate in:
+          {{ cluster_hostnames | unique }}. Each node registers in the cluster
+          keyed by its hostname, so matching hostnames prevent nodes from joining.
+      vars:
+        cluster_hostnames: >-
+          {{
+            groups['cluster']
+            | map('extract', hostvars, ['ansible_facts', 'hostname'])
+            | list
+          }}
+      run_once: true
+
+- name: Node Provisioning
   hosts: cluster
   become: true
   gather_facts: true
@@ -7,18 +32,40 @@
     - cluster
   tags: cluster
 
-- name: Kubernetes Provisioning
+- name: K3s Prerequisites
   hosts: cluster
   become: true
   gather_facts: true
   roles:
+    - k3s_prereq
+  tags: k3s
+
+- name: Helm Provisioning
+  hosts: server
+  become: true
+  gather_facts: true
+  roles:
     - helm
-    - k3s
-  serial:
-    - 1
-    - 2
-    - 5
-  tags: kubernetes
+  tags: helm
+
+- name: K3s Server Provisioning
+  hosts: server
+  become: true
+  gather_facts: true
+  serial: 1
+  roles:
+    - k3s_server
+  # tasks:
+  #   - name: >-
+  #       Copying kubeconfig from
+  #       {{ hostvars[groups['server'][0]]['ansible_facts']['hostname'] }}
+  #     ansible.builtin.fetch:
+  #       src: "{{ ansible_facts['user_dir'] }}/.kube/config"
+  #       dest: ./kubeconfig
+  #       flat: true
+  #     when: >-
+  #       inventory_hostname == groups['server'][0]
+  tags: k3s
 
 - name: Charts Provisioning
   hosts: server
@@ -28,5 +75,5 @@
     - cilium
     - coredns
     - sealed_secrets
-    - argocd
+#     - argocd
   tags: charts
