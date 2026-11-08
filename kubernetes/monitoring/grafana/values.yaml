@@ -6,6 +6,19 @@ resources:
     cpu: 100m
     memory: 128Mi
 
+livenessProbe:
+  httpGet:
+    path: /api/health
+    port: grafana
+  initialDelaySeconds: 90
+  timeoutSeconds: 5
+readinessProbe:
+  httpGet:
+    path: /api/health
+    port: grafana
+  initialDelaySeconds: 60
+  timeoutSeconds: 5
+
 persistence:
   type: pvc
   enabled: true
