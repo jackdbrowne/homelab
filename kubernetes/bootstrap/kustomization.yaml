@@ -20,3 +20,4 @@ resources:
   # Wave 5: Monitoring
   - prometheus-app.yaml
   - grafana-app.yaml
+  - metrics-server-app.yaml

@@ -1,0 +1,16 @@
+---
+nameOverride: metrics-server
+
+namespaceOverride: metrics-server
+
+rbac:
+  create: true
+
+apiService:
+  insecureSkipTLSVerify: false
+tls:
+  type: cert-manager
+metrics:
+  enabled: true
+serviceMonitor:
+  enabled: true
