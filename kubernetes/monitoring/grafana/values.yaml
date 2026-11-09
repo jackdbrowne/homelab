@@ -42,7 +42,7 @@ datasources:
       - name: Prometheus
         type: prometheus
         access: proxy
-        url: http://cluster.local
+        url: http://prometheus-prometheus.prometheus.cluster.local
         isDefault: true
 
 grafana.ini:
