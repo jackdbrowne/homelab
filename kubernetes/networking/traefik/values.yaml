@@ -50,6 +50,10 @@ metrics:
     addRoutersLabels: true
     # -- Enable metrics on services.
     addServicesLabels: true
+    # -- Enable ServiceMonitor Creation
+    disableAPICheck: true
+    serviceMonitor:
+      enabled: true
 
 ports:
   web:
