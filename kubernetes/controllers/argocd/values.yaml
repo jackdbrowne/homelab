@@ -2,6 +2,9 @@ configs:
   params:
     server.insecure: true
     reposerver.parallelism.limit: "1"
+    controller.status.processors: "5"
+    controller.operation.processors: "2"
+    controller.kubectl.parallelism.limit: "5"
   cm:
     url: https://argocd.brwn.network
     kustomize.buildOptions: "--enable-helm"
