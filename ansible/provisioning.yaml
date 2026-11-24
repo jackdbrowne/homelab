@@ -55,16 +55,6 @@
   serial: 1
   roles:
     - k3s_server
-  # tasks:
-  #   - name: >-
-  #       Copying kubeconfig from
-  #       {{ hostvars[groups['server'][0]]['ansible_facts']['hostname'] }}
-  #     ansible.builtin.fetch:
-  #       src: "{{ ansible_facts['user_dir'] }}/.kube/config"
-  #       dest: ./kubeconfig
-  #       flat: true
-  #     when: >-
-  #       inventory_hostname == groups['server'][0]
   tags: k3s
 
 - name: Charts Provisioning
@@ -75,5 +65,5 @@
     - cilium
     - coredns
     - sealed_secrets
-#     - argocd
+    - argocd
   tags: charts

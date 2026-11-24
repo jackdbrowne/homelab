@@ -16,3 +16,5 @@ k3s_server_config_yaml: |
   flannel-backend: none
   service-cidr: '172.20.0.0/16'
 k3s_server_user_kubectl: true
+kubeconfig: "~/.kube/config.new"
+cluster_context: k3s

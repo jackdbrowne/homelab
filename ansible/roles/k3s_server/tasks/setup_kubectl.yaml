@@ -1,0 +1,29 @@
+---
+- name: Check if user bashrc exists
+  ansible.builtin.stat:
+    path: "~{{ item }}/.bashrc"
+  register: k3s_server_bashrc
+
+- name: Create directory .kube
+  ansible.builtin.file:
+    path: ~{{ item }}/.kube
+    state: directory
+    owner: "{{ item }}"
+    mode: "u=rwx,g=rx,o="
+
+- name: Copy config file to user home directory
+  when: not ansible_check_mode
+  ansible.builtin.copy:
+    src: /etc/rancher/k3s/k3s.yaml
+    dest: ~{{ item }}/.kube/config
+    remote_src: true
+    owner: "{{ item }}"
+    mode: "u=rw,g=,o="
+
+- name: Configure default KUBECONFIG for user
+  when: k3s_server_bashrc.stat.exists
+  ansible.builtin.lineinfile:
+    path: ~{{ item }}/.bashrc
+    regexp: 'export KUBECONFIG=~/.kube/config'
+    line: 'export KUBECONFIG=~/.kube/config # Added by k3s-ansible'
+    state: present

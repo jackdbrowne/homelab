@@ -91,6 +91,9 @@
       when: (groups['server'] | length) > 1
       ansible.builtin.pause:
         seconds: 10
+    
+    - name: Copy kubeconfig to client
+      ansible.builtin.include_tasks: kubeconfig.yaml
 
     - name: Get the token if randomly generated
       when:
@@ -219,34 +222,7 @@
     - ctr
     - kubectl
 
-- name: Setup kubectl for user
-  when: k3s_server_user_kubectl
-  block:
-    - name: Check if user bashrc exists
-      ansible.builtin.stat:
-        path: "~{{ ansible_user | default(ansible_env.USER) }}/.bashrc"
-      register: k3s_server_bashrc
-
-    - name: Create directory .kube
-      ansible.builtin.file:
-        path: ~{{ ansible_user | default(ansible_env.USER) }}/.kube
-        state: directory
-        owner: "{{ ansible_user | default(ansible_env.USER) }}"
-        mode: "u=rwx,g=rx,o="
-
-    - name: Copy config file to user home directory
-      when: not ansible_check_mode
-      ansible.builtin.copy:
-        src: /etc/rancher/k3s/k3s.yaml
-        dest: ~{{ ansible_user | default(ansible_env.USER) }}/.kube/config
-        remote_src: true
-        owner: "{{ ansible_user | default(ansible_env.USER) }}"
-        mode: "u=rw,g=,o="
-
-    - name: Configure default KUBECONFIG for user
-      when: k3s_server_bashrc.stat.exists
-      ansible.builtin.lineinfile:
-        path: ~{{ ansible_user | default(ansible_env.USER) }}/.bashrc
-        regexp: 'export KUBECONFIG=~/.kube/config'
-        line: 'export KUBECONFIG=~/.kube/config # Added by k3s-ansible'
-        state: present
+- name: Setup kubectl for users
+  when: kubectl_users is defined and (kubectl_users | length) > 0
+  ansible.builtin.include_tasks: setup_kubectl.yaml
+  loop: "{{ kubectl_users }}"
