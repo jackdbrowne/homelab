@@ -37,6 +37,8 @@ kubeScheduler:
   enabled: false
 kubeProxy:
   enabled: false
+coreDns:
+  enabled: false
 
 alertmanager:
   ## Deploy alertmanager separately

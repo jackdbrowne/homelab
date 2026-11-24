@@ -9,6 +9,11 @@ hpa:
         target:
           type: Utilization
           averageUtilization: 80
+prometheus:
+  service:
+    enabled: true
+  monitor:
+    enabled: true
 podDisruptionBudget:
   maxUnavailable: 1
 resources:
