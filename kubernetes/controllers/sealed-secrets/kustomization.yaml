@@ -5,7 +5,6 @@ namespace: sealed-secrets
 labels:
   - pairs:
       app.kubernetes.io/name: sealed-secrets
-      app.kubernetes.io/component: sealed-secrets-controller
       app.kubernetes.io/part-of: infrastructure
       app.kubernetes.io/managed-by: argocd
 

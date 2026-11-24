@@ -1,5 +1,13 @@
 createController: true # Set to false if controller is already deployed i.e. bootstrapped
 
+metrics:
+  serviceMonitor:
+    enabled: true
+  dashboards:
+    create: true
+    labels:
+      grafana_dashboard: "1"
+
 fullnameOverride: sealed-secrets
 
 existingSecret: sealed-secrets-key

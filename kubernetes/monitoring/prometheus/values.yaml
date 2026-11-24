@@ -45,6 +45,7 @@ alertmanager:
 grafana:
   ## Deploy Grafana separately
   enabled: false
+  forceDeployDashboards: true
 
 ## Manages Prometheus and Alertmanager components
 ##

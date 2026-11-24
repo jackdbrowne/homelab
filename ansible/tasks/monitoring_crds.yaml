@@ -1,0 +1,50 @@
+---
+- name: Render Prometheus Operator CRDs from the monitoring chart
+  ansible.builtin.set_fact:
+    # PyYAML interprets a bare '=' in CRD enums as a YAML value tag.
+    monitoring_crds: >-
+      {{
+        lookup('kubernetes.core.kustomize',
+               dir=playbook_dir ~ '/../kubernetes/monitoring/prometheus',
+               enable_helm=True)
+        | regex_replace('(?m)(?<=- )=(?=[ \t]*$)', '"="')
+        | from_yaml_all
+        | selectattr('kind', 'defined')
+        | selectattr('kind', 'equalto', 'CustomResourceDefinition')
+        | selectattr('spec.group', 'equalto', 'monitoring.coreos.com')
+        | list
+      }}
+  run_once: true
+  no_log: true
+
+- name: Check that Prometheus Operator CRDs were rendered
+  ansible.builtin.assert:
+    that:
+      - monitoring_crds | length > 0
+  run_once: true
+
+- name: Apply Prometheus Operator CRDs
+  kubernetes.core.k8s:
+    definition: "{{ monitoring_crds }}"
+    kubeconfig: /etc/rancher/k3s/k3s.yaml
+    state: present
+    apply: true
+    server_side_apply:
+      field_manager: argocd-controller
+      force_conflicts: true
+  run_once: true
+
+- name: Wait for Prometheus Operator CRDs to be established
+  kubernetes.core.k8s_info:
+    api_version: apiextensions.k8s.io/v1
+    kind: CustomResourceDefinition
+    name: "{{ item.metadata.name }}"
+    kubeconfig: /etc/rancher/k3s/k3s.yaml
+    wait: true
+    wait_condition:
+      type: Established
+      status: "True"
+  loop: "{{ monitoring_crds }}"
+  loop_control:
+    label: "{{ item.metadata.name }}"
+  run_once: true

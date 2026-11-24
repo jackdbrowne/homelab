@@ -5,7 +5,6 @@ namespace: cert-manager
 labels:
   - pairs:
       app.kubernetes.io/name: cert-manager
-      app.kubernetes.io/component: cert-manager-controller
       app.kubernetes.io/part-of: infrastructure
       app.kubernetes.io/managed-by: argocd
 
