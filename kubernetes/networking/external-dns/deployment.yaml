@@ -34,11 +34,27 @@ spec:
             - --registry=txt
             - --txt-owner-id=my-cluster
             - --policy=upsert-only
-
+          ports:
+            - name: http
+              protocol: TCP
+              containerPort: 7979
           envFrom:
             - secretRef:
                 name: pihole-password
-
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: http
+            initialDelaySeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 2
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: http
+            initialDelaySeconds: 5
+            timeoutSeconds: 5
+            failureThreshold: 6
           resources:
             requests:
               memory: "50Mi"

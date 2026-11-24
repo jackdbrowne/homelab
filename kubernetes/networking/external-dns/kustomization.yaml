@@ -13,3 +13,4 @@ resources:
   - rbac.yaml
   - pihole-password-secret.yaml
   - deployment.yaml
+  - pod-monitor.yaml
