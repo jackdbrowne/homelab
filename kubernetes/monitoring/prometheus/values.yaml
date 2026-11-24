@@ -27,6 +27,10 @@ defaultRules:
     kubeScheduler: false
     kubeProxy: false  # Cilium is used instead of kube-proxy
     windows: false    # No Windows nodes in the cluster
+    # The bundled API-server SLO rules are expensive and rely on 30-day data.
+    kubeApiserverAvailability: false
+    kubeApiserverBurnrate: false
+    kubeApiserverSlos: false
 
 ## Component scraping
 kubeControllerManager:

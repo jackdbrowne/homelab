@@ -5,6 +5,7 @@ namespace: prometheus
 resources:
   - namespace.yaml
   - http-route.yaml
+  - api-server-rules.yaml
 
 helmCharts:
   - name: kube-prometheus-stack
